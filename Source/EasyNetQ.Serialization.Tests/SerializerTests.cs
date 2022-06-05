@@ -1,6 +1,7 @@
 // ReSharper disable InconsistentNaming
 using System.Collections.Generic;
 using EasyNetQ.Serialization.NewtonsoftJson;
+using EasyNetQ.Serialization.SystemTextJson;
 using FluentAssertions;
 using RabbitMQ.Client;
 using Xunit;
@@ -91,6 +92,7 @@ public class SerializerTests
     {
         yield return new object[] { new NewtonsoftJsonSerializer() };
         yield return new object[] { new JsonSerializer() };
+        yield return new object[] { new SystemTextJsonSerializer() };
     }
 
 
