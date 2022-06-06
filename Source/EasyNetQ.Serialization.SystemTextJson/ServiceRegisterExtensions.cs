@@ -10,7 +10,7 @@ namespace EasyNetQ;
 public static class ServiceRegisterExtensions
 {
     /// <summary>
-    ///     Enables serializer based on Newtonsoft.Json
+    ///     Enables serializer based on System.Text.Json
     /// </summary>
     /// <param name="serviceRegister">The register</param>
     public static IServiceRegister EnableSystemTextJson(this IServiceRegister serviceRegister)
