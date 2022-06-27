@@ -50,7 +50,7 @@ internal static class MessagePropertiesExtensions
         if (basicProperties.IsHeadersPresent())
             source.Headers = basicProperties.Headers?.Count > 0
                 ? new Dictionary<string, object>(basicProperties.Headers)
-                : null;
+                : default;
     }
 
     public static void CopyTo(this MessageProperties source, IBasicProperties basicProperties)
@@ -65,7 +65,7 @@ internal static class MessagePropertiesExtensions
         if (source.ReplyToPresent) basicProperties.ReplyTo = source.ReplyTo;
         if (source.ExpirationPresent)
             basicProperties.Expiration = source.Expiration == null
-                ? null
+                ? default
                 : ((int)source.Expiration.Value.TotalMilliseconds).ToString(CultureInfo.InvariantCulture);
         if (source.MessageIdPresent) basicProperties.MessageId = source.MessageId;
         if (source.TimestampPresent) basicProperties.Timestamp = new AmqpTimestamp(source.Timestamp);

@@ -36,6 +36,39 @@ public class MessageProperties : ICloneable
         return copy;
     }
 
+    public void Reset()
+    {
+        contentTypePresent = default;
+        contentType = default;
+        contentEncodingPresent = default;
+        contentEncoding = default;
+        deliveryModePresent = default;
+        deliveryMode = default;
+        priorityPresent = default;
+        priority = default;
+        correlationIdPresent = default;
+        correlationId = default;
+        replyToPresent = default;
+        replyTo = default;
+        expirationPresent = default;
+        expiration = default;
+        messageIdPresent = default;
+        messageId = default;
+        timestampPresent = default;
+        timestamp = default;
+        typePresent = default;
+        type = default;
+        userIdPresent = default;
+        userId = default;
+        appIdPresent = default;
+        appId = default;
+        clusterIdPresent = default;
+        clusterId = default;
+        contentTypePresent = default;
+        contentType = default;
+        headers?.Clear();
+    }
+
     private bool contentTypePresent;
     private bool contentEncodingPresent;
     private bool deliveryModePresent;

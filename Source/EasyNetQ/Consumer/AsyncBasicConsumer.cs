@@ -6,6 +6,7 @@ using EasyNetQ.Events;
 using EasyNetQ.Internals;
 using EasyNetQ.Logging;
 using EasyNetQ.Topology;
+using Microsoft.Extensions.ObjectPool;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Exceptions;
 
@@ -13,6 +14,23 @@ namespace EasyNetQ.Consumer;
 
 internal class AsyncBasicConsumer : AsyncDefaultBasicConsumer, IDisposable
 {
+    private static readonly DefaultObjectPool<MessageProperties> messagePropertiesPool = new(
+        new MessagePropertiesPooledObjectPolicy(), 64
+    );
+
+
+    private sealed class MessagePropertiesPooledObjectPolicy : IPooledObjectPolicy<MessageProperties>
+    {
+        public MessageProperties Create() => new();
+
+        public bool Return(MessageProperties properties)
+        {
+            properties.Reset();
+            return true;
+        }
+    }
+
+
     private readonly CancellationTokenSource cts = new();
     private readonly AsyncCountdownEvent onTheFlyMessages = new();
 
@@ -28,7 +46,7 @@ internal class AsyncBasicConsumer : AsyncDefaultBasicConsumer, IDisposable
     public AsyncBasicConsumer(
         ILogger logger,
         IModel model,
-        Queue queue,
+        in Queue queue,
         bool autoAck,
         IEventBus eventBus,
         IHandlerRunner handlerRunner,
@@ -88,20 +106,28 @@ internal class AsyncBasicConsumer : AsyncDefaultBasicConsumer, IDisposable
             var messageReceivedInfo = new MessageReceivedInfo(
                 consumerTag, deliveryTag, redelivered, exchange, routingKey, queue.Name
             );
-            var messageProperties = new MessageProperties();
-            messageProperties.CopyFrom(properties);
-            eventBus.Publish(new DeliveredMessageEvent(messageReceivedInfo, messageProperties, messageBody));
-            var context = new ConsumerExecutionContext(
-                messageHandler, messageReceivedInfo, messageProperties, messageBody
-            );
-            var ackStrategy = await handlerRunner.InvokeUserMessageHandlerAsync(
-                context, cts.Token
-            ).ConfigureAwait(false);
-
-            if (!autoAck)
+            var messageProperties = messagePropertiesPool.Get();
+            try
             {
-                var ackResult = Ack(ackStrategy, messageReceivedInfo);
-                eventBus.Publish(new AckEvent(messageReceivedInfo, messageProperties, messageBody, ackResult));
+                messageProperties.CopyFrom(properties);
+
+                eventBus.Publish(new DeliveredMessageEvent(messageReceivedInfo, messageProperties, messageBody));
+                var context = new ConsumerExecutionContext(
+                    messageHandler, messageReceivedInfo, messageProperties, messageBody
+                );
+                var ackStrategy = await handlerRunner.InvokeUserMessageHandlerAsync(
+                    context, cts.Token
+                ).ConfigureAwait(false);
+
+                if (!autoAck)
+                {
+                    var ackResult = Ack(ackStrategy, messageReceivedInfo);
+                    eventBus.Publish(new AckEvent(messageReceivedInfo, messageProperties, messageBody, ackResult));
+                }
+            }
+            finally
+            {
+                messagePropertiesPool.Return(messageProperties);
             }
         }
         finally
