@@ -52,9 +52,8 @@ internal class ConsumeConfiguration : IConsumeConfiguration
     {
         this.handlerCollectionFactory = handlerCollectionFactory;
         PrefetchCount = defaultPrefetchCount;
-        PerQueueConsumeConfigurations = new List<Tuple<Queue, MessageHandler, PerQueueConsumeConfiguration>>();
-        PerQueueTypedConsumeConfigurations =
-            new List<Tuple<Queue, IHandlerCollection, PerQueueConsumeConfiguration>>();
+        PerQueueConsumeConfigurations = new();
+        PerQueueTypedConsumeConfigurations = new();
     }
 
     public ushort PrefetchCount { get; private set; }
@@ -103,7 +102,7 @@ internal class ConsumeConfiguration : IConsumeConfiguration
 public interface IPerQueueConsumeConfiguration
 {
     /// <summary>
-    ///     Automatically acknowledge a message  
+    ///     Automatically acknowledge a message
     /// </summary>
     /// <returns></returns>
     IPerQueueConsumeConfiguration WithAutoAck();
@@ -171,7 +170,7 @@ public interface IConsumeConfiguration
 public interface ISimpleConsumeConfiguration
 {
     /// <summary>
-    ///     Automatically acknowledge a message  
+    ///     Automatically acknowledge a message
     /// </summary>
     /// <returns></returns>
     ISimpleConsumeConfiguration WithAutoAck();

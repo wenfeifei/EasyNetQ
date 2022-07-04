@@ -40,6 +40,7 @@ public class ConnectionConfiguration
         // set to 50 based on this blog post:
         // http://www.rabbitmq.com/blog/2012/04/25/rabbitmq-performance-measurements-part-2/
         PrefetchCount = 50;
+
         AuthMechanisms = new List<IAuthMechanismFactory> { new PlainMechanismFactory() };
 
         Hosts = new List<HostConfiguration>();
@@ -77,6 +78,11 @@ public class ConnectionConfiguration
     ///     Prefetch count (default is 50)
     /// </summary>
     public ushort PrefetchCount { get; set; }
+
+    /// <summary>
+    ///     Per model consume concurrency level
+    /// </summary>
+    public int? ConsumeConcurrencyLevel { get; set; } = null;
 
     /// <summary>
     /// Dictionary of client properties to be sent to the broker.
